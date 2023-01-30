@@ -11,8 +11,10 @@ import {
   Switch,
   TextField,
 } from "@mui/material";
+import axios from "axios";
 import * as React from "react";
 
+const baseURL = "http://challenge-front-end.bovcontrol.com/v1/checkList";
 const dadosCadastraisDefault = {
   farmerName: "",
   farmeName: "",
@@ -25,20 +27,57 @@ const dadosCadastraisDefault = {
   latitude: 0,
   longitude: 0,
 };
+const defaultData = {
+  checklists: [
+    {
+      _id: "1",
+      type: "BPA",
+      amount_of_milk_produced: 300,
+      number_of_cows_head: 17,
+      had_supervision: true,
+      farmer: {
+        name: "Fazenda São Rock",
+        city: "São Rock",
+      },
+      from: {
+        name: "Luciano Camargo",
+      },
+      to: {
+        name: "Fernando Siqueira",
+      },
+      location: {
+        latitude: -23.5,
+        longitude: -46.6,
+      },
+      created_at: "2022-02-01T10:10:21.748Z",
+      updated_at: "2022-02-01T10:10:21.748Z",
+    },
+  ],
+};
 
 export default function CreateChecklist() {
   const [openCreateChecklist, openCreateChecklistSet] = React.useState(false);
-  const [dadosCadastrais, dadosCadastraisSet] = React.useState(dadosCadastraisDefault);
+  const [dadosCadastrais, dadosCadastraisSet] = React.useState(defaultData.checklists[0]);
 
   let cadastro = () => {
+    console.log("cadastrando");
     console.log(dadosCadastrais);
+
+    dadosCadastrais._id = Math.floor(Math.random() * 101);
+    let dataToBeSend = defaultData;
+    dataToBeSend.checklists[0] = dadosCadastrais;
+
+    axios.post(baseURL, dataToBeSend).then(() => {
+      console.log("cadastrado");
+    });
+
     dadosCadastraisSet(dadosCadastraisDefault);
     openCreateChecklistSet(false);
   };
 
   let openMap = (event) => {
-    dadosCadastrais.latitude = 123;
-    dadosCadastrais.longitude = -321;
+    dadosCadastrais.location.latitude = 123;
+    dadosCadastrais.location.longitude = -321;
   };
 
   let createChecklistData = () => {
@@ -52,8 +91,7 @@ export default function CreateChecklist() {
                 label="Nome do fazendeiro"
                 variant="filled"
                 sx={{ width: "100%" }}
-                onChange={(event) => (dadosCadastrais.farmerName = event.target.value)}
-                defaultValue={dadosCadastrais.farmerName}
+                onChange={(event) => (dadosCadastrais.to.name = event.target.value)}
               />
             </Box>
           </Grid>
@@ -64,7 +102,7 @@ export default function CreateChecklist() {
                 label="nome da fazenda"
                 variant="filled"
                 sx={{ width: "100%" }}
-                onChange={(event) => (dadosCadastrais.farmeName = event.target.value)}
+                onChange={(event) => (dadosCadastrais.farmer.name = event.target.value)}
               />
             </Box>
           </Grid>
@@ -75,7 +113,7 @@ export default function CreateChecklist() {
                 label="cidade da fazenda"
                 variant="filled"
                 sx={{ width: "100%" }}
-                onChange={(event) => (dadosCadastrais.farmCity = event.target.value)}
+                onChange={(event) => (dadosCadastrais.farmer.city = event.target.value)}
               />
             </Box>
           </Grid>
@@ -86,7 +124,7 @@ export default function CreateChecklist() {
                 label="nome do supervisor"
                 variant="filled"
                 sx={{ width: "100%" }}
-                onChange={(event) => (dadosCadastrais.superviserName = event.target.value)}
+                onChange={(event) => (dadosCadastrais.from.name = event.target.value)}
               />
             </Box>
           </Grid>
@@ -97,7 +135,7 @@ export default function CreateChecklist() {
                 row
                 aria-labelledby="checklistType"
                 name="checklistType"
-                onChange={(event) => (dadosCadastrais.checklistType = event.target.value)}
+                onChange={(event) => (dadosCadastrais.type = event.target.value)}
               >
                 <FormControlLabel value="BPA" control={<Radio />} label="BPA" />
                 <FormControlLabel value="Antibiótico" control={<Radio />} label="Antibiótico" />
@@ -113,7 +151,7 @@ export default function CreateChecklist() {
                 variant="filled"
                 sx={{ width: "100%" }}
                 type="number"
-                onChange={(event) => (dadosCadastrais.milkAmount = +event.target.value)}
+                onChange={(event) => (dadosCadastrais.amount_of_milk_produced = +event.target.value)}
               />
             </Box>
           </Grid>
@@ -125,14 +163,14 @@ export default function CreateChecklist() {
                 variant="filled"
                 sx={{ width: "100%" }}
                 type="number"
-                onChange={(event) => (dadosCadastrais.cowAmount = +event.target.value)}
+                onChange={(event) => (dadosCadastrais.number_of_cows_head = +event.target.value)}
               />
             </Box>
           </Grid>
           <Grid item xs={4}>
             <Box elevation={5} sx={{ minHeight: "90px" }}>
               <FormControlLabel
-                control={<Switch onChange={(event) => (dadosCadastrais.haveSupervisor = event.target.checked)} />}
+                control={<Switch onChange={(event) => (dadosCadastrais.had_supervision = event.target.checked)} />}
                 label="teve supervisão no mês em curso"
               />
             </Box>

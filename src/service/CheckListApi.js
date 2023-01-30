@@ -1,12 +1,44 @@
 import { DeleteForever, Edit, Visibility } from "@mui/icons-material";
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Box, Button, Grid, Modal, Paper, Typography } from "@mui/material";
 import axios from "axios";
 import React from "react";
 
 const baseURL = "http://challenge-front-end.bovcontrol.com/v1/checkList";
+const defaultFarm = {
+  _id: 0,
+  type: "",
+  amount_of_milk_produced: 0,
+  number_of_cows_head: 0,
+  had_supervision: false,
+  farmer: {
+    name: "",
+    city: "",
+  },
+  from: {
+    name: "",
+  },
+  to: {
+    name: "",
+  },
+  location: {
+    latitude: 0,
+    longitude: 0,
+  },
+  created_at: "",
+  updated_at: "",
+};
 
 export default function FetchList() {
   const [post, setPost] = React.useState(null);
+  const [openModal, openModalSet] = React.useState(false);
+  const [farmData, farmDataSet] = React.useState(defaultFarm);
+  const handleOpenModal = (data) => {
+    console.log("handleOpenModal");
+    farmDataSet(data);
+    console.log(data);
+    openModalSet(true);
+  };
+  const handleCloseModal = () => openModalSet(false);
 
   function fetchData() {
     axios.get(baseURL).then((response) => {
@@ -19,15 +51,9 @@ export default function FetchList() {
   }, []);
 
   function removeData(id) {
-    axios
-      .delete(baseURL + "/" + id)
-      .then((response) => {
-        console.log("removendo " + id);
-        console.log(response);
-      })
-      .then(() => {
-        fetchData();
-      });
+    axios.delete(baseURL + "/" + id).then(() => {
+      fetchData();
+    });
   }
 
   if (!post) return null;
@@ -60,6 +86,7 @@ export default function FetchList() {
                 startIcon={<DeleteForever />}
                 style={{ margin: "10px" }}
                 onClick={() => removeData(checklist._id)}
+                key={checklist._id + "-" + randonKey + "-button-Deletar"}
               >
                 Deletar
               </Button>
@@ -68,6 +95,7 @@ export default function FetchList() {
                 startIcon={<Edit />}
                 style={{ margin: "10px" }}
                 onClick={() => console.log("Editar fazenda " + checklist._id)}
+                key={checklist._id + "-" + randonKey + "-button-Editar"}
               >
                 Editar
               </Button>
@@ -75,7 +103,8 @@ export default function FetchList() {
                 variant="outlined"
                 startIcon={<Visibility />}
                 style={{ margin: "10px" }}
-                onClick={() => console.log("Visualizar fazenda " + checklist._id)}
+                onClick={() => handleOpenModal(checklist)}
+                key={checklist._id + "-" + randonKey + "-button-Visualizar"}
               >
                 Visualizar
               </Button>
@@ -85,5 +114,56 @@ export default function FetchList() {
       );
     })
   );
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    minWidth: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+  retorno.push(
+    <Modal
+      open={openModal}
+      onClose={() => handleCloseModal()}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+    >
+      <Box sx={style}>
+        <Typography variant="h6" component="h2">
+          Fazendeiro: {farmData.to.name}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Antigo dono: {farmData.from.name}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Nome da fazenda: {farmData.farmer.name}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Cidade: {farmData.farmer.city}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Quantidade de leite: {farmData.amount_of_milk_produced}L
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Teve supervisor: {farmData.had_supervision ? "Sim" : "Não"}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          N° de cabeças de gado: {farmData.number_of_cows_head}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Tipo de fazenda: {farmData.type}
+        </Typography>
+        <Typography variant="h6" component="h2">
+          Localização: lat={farmData.location.latitude} lon={farmData.location.longitude}
+        </Typography>
+      </Box>
+    </Modal>
+  );
+
   return retorno;
 }
